@@ -48,8 +48,13 @@ pub mod todo_app {
         Ok(())
     }
 
+    pub fn close_todo(ctx: Context<CloseTodo>, todo_id: u32) -> Result<()> {
+        // No need to verify todo_id as its already verified in the account
+        // Account will be closed and refunded rent to signer
+        Ok(())
+    }
 
-    // -> Ajouter une instruction "close_todo" pour supprimer le todo
+
     // -> Faire les tests unitaires associés (vous avez le initialize_user en exemple)
 }
 
@@ -111,6 +116,23 @@ pub struct UpdateTodo<'info> {
         mut,
         seeds = [b"todo", signer.key().as_ref(), &todo_id.to_le_bytes()],
         bump
+    )]
+    pub todo: Account<'info, Todo>,
+}
+
+#[derive(Accounts)]
+#[instruction(todo_id: u32)]
+pub struct CloseTodo<'info> {
+    // Signer of the transaction who will receive the lamports back
+    #[account(mut)]
+    pub signer: Signer<'info>,
+    
+    // The todo that needs to be closed
+    #[account(
+        mut,
+        seeds = [b"todo", signer.key().as_ref(), &todo_id.to_le_bytes()],
+        bump,
+        close = signer // This constraint closes the account and sends the lamports to the signer
     )]
     pub todo: Account<'info, Todo>,
 }
